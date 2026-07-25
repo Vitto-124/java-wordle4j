@@ -7,7 +7,10 @@ import ru.yandex.practicum.exceptions.WordNotFoundException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,8 +22,12 @@ class WordleGameTest {
 
     @BeforeEach
     void setUp() throws GameException {
+        // ТОЛЬКО слова из 5 букв!
         dictionary = new WordleDictionary(Arrays.asList(
-                "герой", "город", "гонец", "гость", "грозы"
+                "герой", "город", "гонец", "гость", "грозы",
+                "гроза", "грязь", "гусар", "густо", "гуща",
+                "дамба", "дверь", "дело", "день", "дети",
+                "диван", "добро", "дождь", "домен", "доска"
         ));
         logWriter = new StringWriter();
         log = new PrintWriter(logWriter);
@@ -71,7 +78,7 @@ class WordleGameTest {
     }
 
     @Test
-     void testNullWordThrowsException() {
+    void testNullWordThrowsException() {
         assertThrows(WordNotFoundException.class, () -> game.makeGuess(null));
     }
 
@@ -79,7 +86,7 @@ class WordleGameTest {
     void testHintGeneration() {
         String hint = game.getHint();
         assertNotNull(hint);
-        assertEquals(5, hint.length());
+        assertEquals(5, hint.length());  // ← теперь точно 5 букв
         assertTrue(dictionary.contains(hint));
     }
 
@@ -103,6 +110,7 @@ class WordleGameTest {
         assertTrue(game.isGameOver());
         assertTrue(game.isWon());
 
+        // Используем слово из 5 букв, которое есть в словаре
         assertThrows(GameException.class, () -> game.makeGuess("город"));
     }
 
@@ -138,14 +146,16 @@ class WordleGameTest {
     void testLoseAfterMaxAttempts() throws GameException {
         String answer = game.getAnswer();
 
-        for (int i = 0; i < 6; i++) {
-            String word = dictionary.getWords().stream()
-                    .filter(w -> !w.equals(answer) && !game.getGuesses().contains(w))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Нет подходящего слова"));
+        // Находим слово из 5 букв, которое НЕ является ответом
+        String wrongWord = dictionary.getWords().stream()
+                .filter(w -> !w.equals(answer))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Нет подходящего слова"));
 
+        // Делаем 6 ходов с одним и тем же словом
+        for (int i = 0; i < 6; i++) {
             if (!game.isGameOver()) {
-                game.makeGuess(word);
+                game.makeGuess(wrongWord);
             }
         }
 
