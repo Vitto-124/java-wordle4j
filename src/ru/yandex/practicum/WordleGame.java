@@ -166,13 +166,39 @@ public class WordleGame {
         return dictionary.contains(word);
     }
 
-    public String getAnswer() { return answer; }
-    public int getSteps() { return steps; }
-    public int getMaxAttempts() { return MAX_ATTEMPTS; }
-    public List<String> getGuesses() { return new ArrayList<>(guesses); }
-    public boolean isGameOver() { return gameOver; }
-    public boolean isWon() { return won; }
-    public Set<Character> getAbsentLetters() { return new HashSet<>(absentLetters); }
-    public Set<Character> getRequiredLetters() { return new HashSet<>(requiredLetters); }
-    public Map<Integer, Character> getExactPositions() { return new HashMap<>(exactPositions); }
+    public String getAnswer() {
+        return answer;
+    }
+
+    public int getSteps() {
+        return steps;
+    }
+
+    public int getMaxAttempts() {
+        return MAX_ATTEMPTS;
+    }
+
+    public List<String> getGuesses() {
+        return new ArrayList<>(guesses);
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public boolean isWon() {
+        return won;
+    }
+
+    public Set<Character> getAbsentLetters() {
+        return new HashSet<>(absentLetters);
+    }
+
+    public Set<Character> getRequiredLetters() {
+        return new HashSet<>(requiredLetters);
+    }
+
+    public Map<Integer, Character> getExactPositions() {
+        return new HashMap<>(exactPositions);
+    }
 }
