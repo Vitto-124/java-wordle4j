@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class WordleGameTest {
@@ -43,51 +42,37 @@ class WordleGameTest {
 
     @Test
     void testInvalidWordThrowsException() {
-        assertThrows(WordNotFoundException.class, () -> {
-            game.makeGuess("неверное");
-        });
+        assertThrows(WordNotFoundException.class, () -> game.makeGuess("неверное"));
     }
 
     @Test
     void testShortWordThrowsException() {
-        assertThrows(WordNotFoundException.class, () -> {
-            game.makeGuess("дом");
-        });
+        assertThrows(WordNotFoundException.class, () -> game.makeGuess("дом"));
     }
 
     @Test
     void testLongWordThrowsException() {
-        assertThrows(WordNotFoundException.class, () -> {
-            game.makeGuess("компьютер");
-        });
+        assertThrows(WordNotFoundException.class, () -> game.makeGuess("компьютер"));
     }
 
     @Test
     void testEnglishLettersThrowsException() {
-        assertThrows(WordNotFoundException.class, () -> {
-            game.makeGuess("hello");
-        });
+        assertThrows(WordNotFoundException.class, () -> game.makeGuess("hello"));
     }
 
     @Test
     void testWordNotInDictionaryThrowsException() {
-        assertThrows(WordNotFoundException.class, () -> {
-            game.makeGuess("абвгд");
-        });
+        assertThrows(WordNotFoundException.class, () -> game.makeGuess("абвгд"));
     }
 
     @Test
     void testEmptyWordThrowsException() {
-        assertThrows(WordNotFoundException.class, () -> {
-            game.makeGuess("");
-        });
+        assertThrows(WordNotFoundException.class, () -> game.makeGuess(""));
     }
 
     @Test
-    void testNullWordThrowsException() {
-        assertThrows(WordNotFoundException.class, () -> {
-            game.makeGuess(null);
-        });
+     void testNullWordThrowsException() {
+        assertThrows(WordNotFoundException.class, () -> game.makeGuess(null));
     }
 
     @Test
@@ -100,19 +85,74 @@ class WordleGameTest {
 
     @Test
     void testHintNotGeneratedAfterGameOver() throws GameException {
-        assertNotNull(game.getHint());
+        String answer = game.getAnswer();
+        game.makeGuess(answer);
+
+        assertTrue(game.isGameOver());
+        assertTrue(game.isWon());
+
+        String hint = game.getHint();
+        assertNull(hint);
     }
 
     @Test
     void testCannotMakeMoveAfterGameOver() throws GameException {
-        assertFalse(game.isGameOver());
+        String answer = game.getAnswer();
+        game.makeGuess(answer);
+
+        assertTrue(game.isGameOver());
+        assertTrue(game.isWon());
+
+        assertThrows(GameException.class, () -> game.makeGuess("город"));
     }
 
     @Test
     void testStepsDecreaseAfterGuess() throws GameException {
-        int initialSteps = game.getSteps();
-        assertEquals(6, initialSteps);
+        assertEquals(6, game.getSteps());
 
+        String answer = game.getAnswer();
+        String wrongWord = dictionary.getWords().stream()
+                .filter(w -> !w.equals(answer))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Нет подходящего слова"));
+
+        game.makeGuess(wrongWord);
+
+        assertEquals(5, game.getSteps());
+        assertFalse(game.isGameOver());
+        assertEquals(1, game.getGuesses().size());
+    }
+
+    @Test
+    void testWinWithCorrectGuess() throws GameException {
+        String answer = game.getAnswer();
+        String result = game.makeGuess(answer);
+
+        assertTrue(game.isGameOver());
+        assertTrue(game.isWon());
+        assertEquals("+++++", result);
+        assertEquals(5, game.getSteps());
+    }
+
+    @Test
+    void testLoseAfterMaxAttempts() throws GameException {
+        String answer = game.getAnswer();
+
+        for (int i = 0; i < 6; i++) {
+            String word = dictionary.getWords().stream()
+                    .filter(w -> !w.equals(answer) && !game.getGuesses().contains(w))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Нет подходящего слова"));
+
+            if (!game.isGameOver()) {
+                game.makeGuess(word);
+            }
+        }
+
+        assertTrue(game.isGameOver());
+        assertFalse(game.isWon());
+        assertEquals(0, game.getSteps());
+        assertEquals(6, game.getGuesses().size());
     }
 
     @Test
@@ -124,7 +164,7 @@ class WordleGameTest {
     }
 
     @Test
-    void testGetGuessesReturnsCopy() throws GameException {
+    void testGetGuessesReturnsCopy() {
         List<String> guesses1 = game.getGuesses();
         guesses1.add("тест");
 
