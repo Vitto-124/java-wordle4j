@@ -7,6 +7,7 @@ import ru.yandex.practicum.exceptions.DictionaryLoadException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,8 +61,10 @@ class WordleDictionaryLoaderTest {
         assertEquals(2, dictionary.size());
         assertTrue(dictionary.contains("герой"));
         assertTrue(dictionary.contains("абвгд"));
-        assertFalse(dictionary.contains("hello"));
         assertFalse(dictionary.contains("12345"));
+        assertFalse(dictionary.contains("hello"));
+        assertFalse(dictionary.contains("слишкомдлинное"));
+        assertFalse(dictionary.contains("дом"));
     }
 
     @Test
@@ -77,10 +80,14 @@ class WordleDictionaryLoaderTest {
         WordleDictionary dictionary = loader.loadDictionary(dictionaryFile.toString());
 
         assertEquals(3, dictionary.size());
+
         assertTrue(dictionary.contains("герой"));
         assertTrue(dictionary.contains("город"));
         assertTrue(dictionary.contains("гонец"));
+
         assertFalse(dictionary.contains("ГЕРОЙ"));
+        assertFalse(dictionary.contains("ГОРОД"));
+        assertFalse(dictionary.contains("Гонец"));
     }
 
     @Test
@@ -88,19 +95,35 @@ class WordleDictionaryLoaderTest {
         Path dictionaryFile = tempDir.resolve("words.txt");
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(dictionaryFile.toFile()), StandardCharsets.UTF_8))) {
-            writer.write("ёжик\n");
-            writer.write("берёза\n");
-            writer.write("озеро\n");
+
+            writer.write("ёлка\n");
             writer.write("клён\n");
 
-            writer.write("мелёда\n");
+            writer.write("сёдла\n");
+            writer.write("зёрна\n");
+            writer.write("мёдве\n");
         }
+
+        WordleDictionary dictionary = loader.loadDictionary(dictionaryFile.toString());
+
+        assertEquals(3, dictionary.size());
+
+        assertTrue(dictionary.contains("седла"));
+        assertTrue(dictionary.contains("зерна"));
+        assertTrue(dictionary.contains("медве"));
+
+        assertFalse(dictionary.contains("сёдла"));
+        assertFalse(dictionary.contains("зёрна"));
+        assertFalse(dictionary.contains("мёдве"));
+
+        assertFalse(dictionary.contains("елка"));
+        assertFalse(dictionary.contains("клен"));
     }
 
     @Test
     void testLoadEmptyFileThrowsException(@TempDir Path tempDir) throws IOException {
         Path emptyFile = tempDir.resolve("empty.txt");
-        emptyFile.toFile().createNewFile();
+        Files.createFile(emptyFile);
 
         assertThrows(DictionaryLoadException.class,
                 () -> loader.loadDictionary(emptyFile.toString()));
@@ -120,6 +143,7 @@ class WordleDictionaryLoaderTest {
             writer.write("12345\n");
             writer.write("hello\n");
             writer.write("дом\n");
+            writer.write("компьютер\n");
         }
 
         assertThrows(DictionaryLoadException.class,
@@ -140,5 +164,7 @@ class WordleDictionaryLoaderTest {
         WordleDictionary dictionary = loader.loadDictionary(dictionaryFile.toString());
 
         assertEquals(4, dictionary.size());
+        assertTrue(dictionary.contains("герой"));
+        assertTrue(dictionary.contains("город"));
     }
 }

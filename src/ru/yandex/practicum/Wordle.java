@@ -11,55 +11,72 @@ public class Wordle {
     private static final String LOG_FILE = "wordle.log";
 
     public static void main(String[] args) {
-        try (PrintWriter log = createLog();
-             Scanner scanner = new Scanner(System.in)) {
+        PrintWriter log = null;
 
-            WordleDictionaryLoader loader = new WordleDictionaryLoader();
-            WordleDictionary dictionary = loader.loadDictionary(DICTIONARY_FILE);
+        try {
+            log = createLog();
 
-            WordleGame game = new WordleGame(dictionary, log);
+            try (Scanner scanner = new Scanner(System.in)) {
 
-            System.out.println("Добро пожаловать в Wordle!");
-            System.out.println("Угадайте слово из 5 букв. У вас 6 попыток.");
-            System.out.println("Для подсказки нажмите Enter без ввода.");
-            System.out.println();
+                WordleDictionaryLoader loader = new WordleDictionaryLoader();
+                WordleDictionary dictionary = loader.loadDictionary(DICTIONARY_FILE);
 
-            while (!game.isGameOver()) {
-                System.out.println("Осталось попыток: " + game.getSteps());
-                System.out.print("Введите слово: ");
-                String input = scanner.nextLine();
+                WordleGame game = new WordleGame(dictionary, log);
 
-                if (input.trim().isEmpty()) {
-                    String hint = game.getHint();
-                    if (hint != null) {
-                        System.out.println("Подсказка: " + hint);
-                    } else {
-                        System.out.println("Нет подходящих подсказок.");
+                System.out.println("Добро пожаловать в Wordle!");
+                System.out.println("Угадайте слово из 5 букв. У вас 6 попыток.");
+                System.out.println("Для подсказки нажмите Enter без ввода.");
+                System.out.println();
+
+                while (!game.isGameOver()) {
+                    System.out.println("Осталось попыток: " + game.getSteps());
+                    System.out.print("Введите слово: ");
+                    String input = scanner.nextLine();
+
+                    if (input.trim().isEmpty()) {
+                        String hint = game.getHint();
+                        if (hint != null) {
+                            System.out.println("Подсказка: " + hint);
+                        } else {
+                            System.out.println("Нет подходящих подсказок.");
+                        }
+                        continue;
                     }
-                    continue;
+
+                    try {
+                        String result = game.makeGuess(input);
+                        System.out.println(result);
+
+                        if (game.isGameOver()) {
+                            if (game.isWon()) {
+                                System.out.println("Поздравляем! Вы угадали слово!");
+                            } else {
+                                System.out.println("Загаданное слово: " + game.getAnswer());
+                            }
+                        } else if (result.length() == 5) {
+                            System.out.println("+ = правильная позиция, ^ = есть в слове, - = нет");
+                        }
+                    } catch (GameException e) {
+                        System.out.println("Ошибка: " + e.getMessage());
+                    }
                 }
 
-                try {
-                    String result = game.makeGuess(input);
-                    System.out.println(result);
-
-                    if (!game.isGameOver() && result.length() == 5) {
-                        System.out.println("+ = правильная позиция, ^ = есть в слове, - = нет");
-                    }
-                } catch (GameException e) {
-                    System.out.println("Ошибка: " + e.getMessage());
-                }
-            }
-
-            if (game.isWon()) {
-                System.out.println("Поздравляем! Вы угадали слово!");
-            } else {
-                System.out.println("Загаданное слово: " + game.getAnswer());
             }
 
         } catch (Exception e) {
-            System.err.println("Критическая ошибка: " + e.getMessage());
-            e.printStackTrace();
+
+            if (log != null) {
+                log.println("=== КРИТИЧЕСКАЯ ОШИБКА ===");
+                log.println("Критическая ошибка: " + e.getMessage());
+                e.printStackTrace(log);
+                log.println("===========================");
+                log.flush();
+            }
+
+        } finally {
+            if (log != null) {
+                log.close();
+            }
         }
     }
 

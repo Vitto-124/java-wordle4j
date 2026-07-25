@@ -23,7 +23,7 @@ public class WordleDictionary {
 
     public String getRandomWord() {
         if (words.isEmpty()) {
-            return null;
+            throw new IllegalStateException("Словарь пуст, хотя должен содержать слова");
         }
         Random random = new Random();
         return words.get(random.nextInt(words.size()));
@@ -54,24 +54,20 @@ public class WordleDictionary {
 
         char[] guessChars = guess.toCharArray();
         char[] answerChars = answer.toCharArray();
-        boolean[] used = new boolean[answer.length()];
 
-        // Точные совпадения
         for (int i = 0; i < guessChars.length; i++) {
             if (guessChars[i] == answerChars[i]) {
                 result.append('+');
-                used[i] = true;
                 answerCounts.merge(answerChars[i], -1, Integer::sum);
             } else {
                 result.append(' ');
             }
         }
 
-        // Буквы не на своих местах
         for (int i = 0; i < guessChars.length; i++) {
             if (result.charAt(i) == ' ') {
                 char c = guessChars[i];
-                if (answerCounts.getOrDefault(c, 0) > 0 && containsLetter(answer, c, used)) {
+                if (answerCounts.getOrDefault(c, 0) > 0) {
                     result.setCharAt(i, '^');
                     answerCounts.merge(c, -1, Integer::sum);
                 } else {
@@ -81,15 +77,6 @@ public class WordleDictionary {
         }
 
         return result.toString();
-    }
-
-    private boolean containsLetter(String word, char letter, boolean[] used) {
-        for (int i = 0; i < word.length(); i++) {
-            if (!used[i] && word.charAt(i) == letter) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public List<String> getWords() {
