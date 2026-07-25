@@ -24,9 +24,9 @@ class WordleGameTest {
     void setUp() throws GameException {
         dictionary = new WordleDictionary(Arrays.asList(
                 "герой", "город", "гонец", "гость", "грозы",
-                "гроза", "грязь", "гусар", "густо", "гуща",
-                "дамба", "дверь", "дело", "дерев", "день",
-                "диван", "добро", "дождь", "домен", "доска"
+                "гроза", "грязь", "гусар", "густо",
+                "дамба", "дверь", "дерев", "диван",
+                "добро", "дождь", "домен", "доска"
         ));
         logWriter = new StringWriter();
         log = new PrintWriter(logWriter);
